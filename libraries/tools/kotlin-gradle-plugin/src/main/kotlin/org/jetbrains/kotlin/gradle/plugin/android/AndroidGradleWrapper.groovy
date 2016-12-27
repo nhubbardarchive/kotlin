@@ -16,6 +16,7 @@
 
 package org.jetbrains.kotlin.gradle.plugin.android
 
+import com.android.build.api.transform.*
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.api.AndroidSourceSet
@@ -23,8 +24,9 @@ import com.android.build.gradle.api.ApkVariant
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.VariantManager
+import com.android.build.gradle.internal.pipeline.OriginalStream
+import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
-import com.android.builder.dependency.LibraryDependency
 import com.android.builder.model.SourceProvider
 import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.internal.DefaultDomainObjectSet
@@ -61,6 +63,101 @@ class AndroidGradleWrapper {
   @NotNull
   static String getVariantName(Object variant) {
     return variant.getBuildType().getName()
+  }
+
+  static getJackOptions(Object variantData) {
+    def variantConfiguration = variantData.variantConfiguration
+    if (variantConfiguration.getMetaClass().getMetaMethod("getJackOptions")) {
+      return variantConfiguration.getJackOptions()
+    }
+    return null
+  }
+
+  static boolean isJackEnabled(Object variantData) {
+    def jackOptions = getJackOptions(variantData)
+    if (jackOptions) {
+      return jackOptions.enabled
+    }
+    return false
+  }
+
+  @Nullable
+  static AbstractCompile getJavacTask(Object baseVariantData) {
+    if (baseVariantData.getMetaClass().getMetaProperty("javacTask")) {
+      return baseVariantData.javacTask
+    }
+    return null
+  }
+
+  static getJavaCompilerTask(Object baseVariantData) {
+    if (baseVariantData.getMetaClass().getMetaProperty("javaCompilerTask")) {
+      return baseVariantData.javaCompilerTask
+    }
+    return null
+  }
+
+  static getJackTask(Object variantData) {
+    def compilerTask = getJavaCompilerTask(variantData)
+    if (compilerTask instanceof TransformTask) {
+      return compilerTask
+    }
+    return null
+  }
+
+  static getJackTransform(Object variantData) {
+    def jackTask = getJackTask(variantData)
+    if (jackTask == null) {
+      return
+    }
+
+    if (jackTask.getMetaClass().getMetaProperty("transform")) {
+      return jackTask.transform
+    }
+
+    return null
+  }
+
+  static addSourceToJack(Object variantData, File sourceFolder) {
+    def jackTransform = getJackTransform(variantData)
+    if (jackTransform == null) {
+      return
+    }
+    jackTransform.addSource(sourceFolder)
+  }
+
+  static disableJackAnnotationProcessing(Object variantData) {
+    def jackTransform = getJackTransform(variantData)
+    if (jackTransform == null) {
+      return
+    }
+
+    if (!jackTransform.getMetaClass().getMetaProperty("options")) {
+      return
+    }
+
+    def jackOptions = jackTransform.options
+
+    jackOptions.setAnnotationProcessorOutputDirectory(null)
+    jackOptions.setAnnotationProcessorNames([])
+    jackOptions.setAnnotationProcessorClassPath([])
+    jackOptions.setAnnotationProcessorOptions([:])
+  }
+
+  static configureJackTask(Object variantData, File jillOutputFile, String kotlinJillTaskName) {
+    def jackTask = getJackTask(variantData)
+    if (jackTask == null) {
+      return
+    }
+
+    def jillOutputStream = OriginalStream.builder()
+            .addContentType(QualifiedContent.DefaultContentType.CLASSES)
+            .addScope(QualifiedContent.Scope.PROJECT)
+            .setJar(jillOutputFile)
+            .setDependency(kotlinJillTaskName)
+            .build()
+
+    jackTask.consumedInputStreams.add(jillOutputStream)
+    jackTask.dependsOn(kotlinJillTaskName)
   }
 
   @Nullable
