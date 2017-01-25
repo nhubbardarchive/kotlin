@@ -5894,18 +5894,6 @@ public class BoxJsTestGenerated extends AbstractBoxJsTest {
             doTest(fileName);
         }
 
-        @TestMetadata("nativeGetterAndNativeSetter.kt")
-        public void testNativeGetterAndNativeSetter() throws Exception {
-            String fileName = KotlinTestUtils.navigationMetadata("js/js.translator/testData/box/native/nativeGetterAndNativeSetter.kt");
-            doTest(fileName);
-        }
-
-        @TestMetadata("nativeInvoke.kt")
-        public void testNativeInvoke() throws Exception {
-            String fileName = KotlinTestUtils.navigationMetadata("js/js.translator/testData/box/native/nativeInvoke.kt");
-            doTest(fileName);
-        }
-
         @TestMetadata("nestedElements.kt")
         public void testNestedElements() throws Exception {
             String fileName = KotlinTestUtils.navigationMetadata("js/js.translator/testData/box/native/nestedElements.kt");
