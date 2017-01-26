@@ -38,14 +38,13 @@ open class KotlinJillTask : DefaultTask() {
 
     @TaskAction
     fun transform() {
-        val buildToolServiceLoader = BuildToolsServiceLoader.INSTANCE.forVersion(androidBuilder.targetInfo.buildTools)
-        val jillProvider = buildToolServiceLoader.getSingleService(androidBuilder.logger, BuildToolsServiceLoader.JILL)
-        if (!jillProvider.isPresent) {
-            error("Jill provider not found")
-        }
+        val jillProvider = BuildToolsServiceLoader.INSTANCE
+                .forVersion(androidBuilder.targetInfo.buildTools)
+                .getServiceLoader(BuildToolsServiceLoader.JILL)
+                .firstOrNull() ?: error("Jill provider not found")
 
         outputJillFile.parentFile.mkdirs()
-        val config01: Api01Config = jillProvider.get().createConfig(Api01Config::class.java)
+        val config01: Api01Config = jillProvider.createConfig(Api01Config::class.java)
         config01.setInputJavaBinaryFile(inputJarFile)
         config01.setOutputJackFile(outputJillFile)
         config01.task.run()
