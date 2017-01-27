@@ -74,11 +74,16 @@ class AndroidGradleWrapper {
   }
 
   static boolean isJackEnabled(Object variantData) {
-    def jackOptions = getJackOptions(variantData)
-    if (jackOptions) {
-      return jackOptions.enabled
-    }
-    return false
+    return getJackOptions(variantData)?.enabled ?: false
+  }
+
+  static AbstractCompile getJavaTask(Object variantData) {
+      if (isJackEnabled(variantData)) {
+          return getJavacTask(variantData)
+      }
+      else {
+          return getJavaCompile(variantData)
+      }
   }
 
   @Nullable
@@ -89,15 +94,9 @@ class AndroidGradleWrapper {
     return null
   }
 
-  static getJavaCompilerTask(Object baseVariantData) {
-    if (baseVariantData.getMetaClass().getMetaProperty("javaCompilerTask")) {
-      return baseVariantData.javaCompilerTask
-    }
-    return null
-  }
-
-  static getJackTask(Object variantData) {
-    def compilerTask = getJavaCompilerTask(variantData)
+  @Nullable
+  static TransformTask getJackTask(Object variantData) {
+    def compilerTask = variantData.javaCompilerTask
     if (compilerTask instanceof TransformTask) {
       return compilerTask
     }
@@ -105,46 +104,24 @@ class AndroidGradleWrapper {
   }
 
   static getJackTransform(Object variantData) {
-    def jackTask = getJackTask(variantData)
-    if (jackTask == null) {
-      return
-    }
-
-    if (jackTask.getMetaClass().getMetaProperty("transform")) {
-      return jackTask.transform
-    }
-
-    return null
+    return getJackTask(variantData)?.transform
   }
 
   static addSourceToJack(Object variantData, File sourceFolder) {
-    def jackTransform = getJackTransform(variantData)
-    if (jackTransform == null) {
-      return
-    }
-    jackTransform.addSource(sourceFolder)
+    getJackTransform(variantData)?.addSource(sourceFolder)
   }
 
   static disableJackAnnotationProcessing(Object variantData) {
-    def jackTransform = getJackTransform(variantData)
-    if (jackTransform == null) {
-      return
-    }
-
-    if (!jackTransform.getMetaClass().getMetaProperty("options")) {
-      return
-    }
-
-    def jackOptions = jackTransform.options
-
-    jackOptions.setAnnotationProcessorOutputDirectory(null)
-    jackOptions.setAnnotationProcessorNames([])
-    jackOptions.setAnnotationProcessorClassPath([])
-    jackOptions.setAnnotationProcessorOptions([:])
+    def jackOptions = getJackTransform(variantData)?.options
+    jackOptions?.setAnnotationProcessorOutputDirectory(null)
+    jackOptions?.setAnnotationProcessorNames([])
+    jackOptions?.setAnnotationProcessorClassPath([])
+    jackOptions?.setAnnotationProcessorOptions([:])
   }
 
   static configureJackTask(Object variantData, File jillOutputFile, String kotlinJillTaskName) {
     def jackTask = getJackTask(variantData)
+    // There is no Jack task for some variants
     if (jackTask == null) {
       return
     }

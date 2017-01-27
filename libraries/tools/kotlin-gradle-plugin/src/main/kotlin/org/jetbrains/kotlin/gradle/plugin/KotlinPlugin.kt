@@ -366,12 +366,7 @@ internal open class KotlinAndroidPlugin(
             val variantDataName = variantData.name
             logger.kotlinDebug("Process variant [$variantDataName]")
 
-            val javaTask = if (AndroidGradleWrapper.isJackEnabled(variantData)) {
-                AndroidGradleWrapper.getJavacTask(variantData)
-            }
-            else {
-                AndroidGradleWrapper.getJavaCompile(variantData)
-            }
+            val javaTask = AndroidGradleWrapper.getJavaTask(variantData)
 
             if (javaTask == null) {
                 logger.info("KOTLIN: javaTask is missing for $variantDataName, so Kotlin files won't be compiled for it")
@@ -458,7 +453,7 @@ internal open class KotlinAndroidPlugin(
                 val kotlinJillTaskName = scope.getTaskName("transformKotlinClassesWithJillFor")
                 val jillOutputFilePath = File(jarPath.absolutePath + ".jill")
                 project.tasks.create(kotlinJillTaskName, KotlinJillTask::class.java) { jillTask ->
-                    jillTask.androidBuilder = variantData.scope.globalScope.androidBuilder
+                    jillTask.buildTools = variantData.scope.globalScope.androidBuilder.targetInfo.buildTools
                     jillTask.inputJarFile = jarPath
                     jillTask.outputJillFile = jillOutputFilePath
                     jillTask.dependsOn(zipTaskName)

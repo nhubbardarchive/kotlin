@@ -17,9 +17,9 @@
 package org.jetbrains.kotlin.gradle.plugin.android
 
 
-import com.android.builder.core.AndroidBuilder
 import com.android.builder.core.BuildToolsServiceLoader
 import com.android.jill.api.v01.Api01Config
+import com.android.sdklib.BuildToolInfo
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
@@ -34,12 +34,12 @@ open class KotlinJillTask : DefaultTask() {
     @OutputFile
     lateinit var outputJillFile: File
 
-    lateinit var androidBuilder: AndroidBuilder
+    lateinit var buildTools: BuildToolInfo
 
     @TaskAction
     fun transform() {
         val jillProvider = BuildToolsServiceLoader.INSTANCE
-                .forVersion(androidBuilder.targetInfo.buildTools)
+                .forVersion(buildTools)
                 .getServiceLoader(BuildToolsServiceLoader.JILL)
                 .firstOrNull() ?: error("Jill provider not found")
 
