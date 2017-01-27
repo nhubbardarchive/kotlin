@@ -57,12 +57,18 @@ abstract class BaseGradleIT {
         val resourcesRootFile = File("src/test/resources")
         val MAX_DAEMON_RUNS = 30
 
+        fun getEnvJDK_18() = System.getenv()["JDK_18"]
+
         @AfterClass
         @JvmStatic
         @Synchronized
         @Suppress("unused")
         fun tearDownAll() {
-            ranDaemonVersions.keys.forEach { stopDaemon(it) }
+            // Latest gradle requires Java > 7
+            val environmentVariables = hashMapOf<String, String>()
+            getEnvJDK_18()?.let { environmentVariables["JAVA_HOME"] = it }
+
+            ranDaemonVersions.keys.forEach { stopDaemon(it, environmentVariables) }
             ranDaemonVersions.clear()
         }
 

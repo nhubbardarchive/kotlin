@@ -195,6 +195,8 @@ abstract class AbstractKotlinAndroidWithJackGradleTests(
         private val androidGradlePluginVersion: String
 ) : BaseGradleIT() {
 
+    fun getEnvJDK_18() = System.getenv()["JDK_18"]
+
     override fun defaultBuildOptions() =
             super.defaultBuildOptions().copy(androidHome = File("../../../dependencies/android-sdk-for-tests"),
                     androidGradlePluginVersion = androidGradlePluginVersion, javaHome = File(getEnvJDK_18()))
@@ -355,24 +357,6 @@ abstract class AbstractKotlinAndroidWithJackGradleTests(
                     ":transformJackWithJackForDebug"
             )
         }
-    }
-
-    companion object {
-
-        @AfterClass
-        @JvmStatic
-        @Synchronized
-        @Suppress("unused")
-        fun tearDownAll() {
-            // Latest gradle requires Java > 7
-            val environmentVariables = hashMapOf<String, String>()
-            getEnvJDK_18()?.let { environmentVariables["JAVA_HOME"] = it }
-
-            BaseGradleIT.ranDaemonVersions.keys.forEach { stopDaemon(it, environmentVariables) }
-            BaseGradleIT.ranDaemonVersions.clear()
-        }
-
-        fun getEnvJDK_18() = System.getenv()["JDK_18"]
     }
 }
 

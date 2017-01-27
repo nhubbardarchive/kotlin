@@ -65,7 +65,7 @@ class AndroidGradleWrapper {
     return variant.getBuildType().getName()
   }
 
-  static getJackOptions(Object variantData) {
+  private static getJackOptions(Object variantData) {
     def variantConfiguration = variantData.variantConfiguration
     if (variantConfiguration.getMetaClass().getMetaMethod("getJackOptions")) {
       return variantConfiguration.getJackOptions()
@@ -87,7 +87,7 @@ class AndroidGradleWrapper {
   }
 
   @Nullable
-  static AbstractCompile getJavacTask(Object baseVariantData) {
+  private static AbstractCompile getJavacTask(Object baseVariantData) {
     if (baseVariantData.getMetaClass().getMetaProperty("javacTask")) {
       return baseVariantData.javacTask
     }
@@ -95,7 +95,7 @@ class AndroidGradleWrapper {
   }
 
   @Nullable
-  static TransformTask getJackTask(Object variantData) {
+  private static TransformTask getJackTask(Object variantData) {
     def compilerTask = variantData.javaCompilerTask
     if (compilerTask instanceof TransformTask) {
       return compilerTask
@@ -103,7 +103,7 @@ class AndroidGradleWrapper {
     return null
   }
 
-  static getJackTransform(Object variantData) {
+  private static getJackTransform(Object variantData) {
     return getJackTask(variantData)?.transform
   }
 
@@ -138,7 +138,7 @@ class AndroidGradleWrapper {
   }
 
   @Nullable
-  static AbstractCompile getJavaCompile(Object baseVariantData) {
+  private static AbstractCompile getJavaCompile(Object baseVariantData) {
     if (baseVariantData.getMetaClass().getMetaProperty("javaCompileTask")) {
       return baseVariantData.javaCompileTask
     }
