@@ -213,8 +213,10 @@ class Kapt3KotlinGradleSubplugin : KotlinGradleSubplugin<KotlinCompile> {
         // Add generated source dir as a source root for kotlinCompile and javaCompile
         kotlinCompile.source(sourcesOutputDir)
         javaCompile.source(sourcesOutputDir)
-        if (AndroidGradleWrapper.isJackEnabled(variantData)) {
-            AndroidGradleWrapper.addSourceToJack(variantData, sourcesOutputDir)
+        variantData?.let {
+            if (AndroidGradleWrapper.isJackEnabled(it)) {
+                AndroidGradleWrapper.addSourceToJack(it, sourcesOutputDir)
+            }
         }
 
         val pluginOptions = kaptTask.pluginOptions
@@ -230,8 +232,10 @@ class Kapt3KotlinGradleSubplugin : KotlinGradleSubplugin<KotlinCompile> {
             options.compilerArgs = options.compilerArgs.filter { !it.startsWith("-proc:") } + "-proc:none"
         }
 
-        if (AndroidGradleWrapper.isJackEnabled(variantData)) {
-            AndroidGradleWrapper.disableJackAnnotationProcessing(variantData)
+        variantData?.let {
+            if (AndroidGradleWrapper.isJackEnabled(it)) {
+                AndroidGradleWrapper.disableJackAnnotationProcessing(it)
+            }
         }
     }
 

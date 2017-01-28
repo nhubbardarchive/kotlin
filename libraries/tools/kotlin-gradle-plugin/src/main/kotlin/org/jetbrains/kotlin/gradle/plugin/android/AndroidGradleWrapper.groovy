@@ -65,7 +65,8 @@ class AndroidGradleWrapper {
     return variant.getBuildType().getName()
   }
 
-  private static getJackOptions(Object variantData) {
+  @Nullable
+  private static getJackOptions(@NotNull Object variantData) {
     def variantConfiguration = variantData.variantConfiguration
     if (variantConfiguration.getMetaClass().getMetaMethod("getJackOptions")) {
       return variantConfiguration.getJackOptions()
@@ -73,11 +74,12 @@ class AndroidGradleWrapper {
     return null
   }
 
-  static boolean isJackEnabled(Object variantData) {
+  static boolean isJackEnabled(@NotNull Object variantData) {
     return getJackOptions(variantData)?.enabled ?: false
   }
 
-  static AbstractCompile getJavaTask(Object variantData) {
+  @Nullable
+  static AbstractCompile getJavaTask(@NotNull Object variantData) {
       if (isJackEnabled(variantData)) {
           return getJavacTask(variantData)
       }
@@ -87,7 +89,7 @@ class AndroidGradleWrapper {
   }
 
   @Nullable
-  private static AbstractCompile getJavacTask(Object baseVariantData) {
+  private static AbstractCompile getJavacTask(@NotNull Object baseVariantData) {
     if (baseVariantData.getMetaClass().getMetaProperty("javacTask")) {
       return baseVariantData.javacTask
     }
@@ -95,7 +97,7 @@ class AndroidGradleWrapper {
   }
 
   @Nullable
-  private static TransformTask getJackTask(Object variantData) {
+  private static TransformTask getJackTask(@NotNull Object variantData) {
     def compilerTask = variantData.javaCompilerTask
     if (compilerTask instanceof TransformTask) {
       return compilerTask
@@ -103,15 +105,16 @@ class AndroidGradleWrapper {
     return null
   }
 
-  private static getJackTransform(Object variantData) {
+  @Nullable
+  private static getJackTransform(@NotNull Object variantData) {
     return getJackTask(variantData)?.transform
   }
 
-  static addSourceToJack(Object variantData, File sourceFolder) {
+  static addSourceToJack(@NotNull Object variantData, @NotNull File sourceFolder) {
     getJackTransform(variantData)?.addSource(sourceFolder)
   }
 
-  static disableJackAnnotationProcessing(Object variantData) {
+  static disableJackAnnotationProcessing(@NotNull Object variantData) {
     def jackOptions = getJackTransform(variantData)?.options
     jackOptions?.setAnnotationProcessorOutputDirectory(null)
     jackOptions?.setAnnotationProcessorNames([])
@@ -119,7 +122,10 @@ class AndroidGradleWrapper {
     jackOptions?.setAnnotationProcessorOptions([:])
   }
 
-  static configureJackTask(Object variantData, File jillOutputFile, String kotlinJillTaskName) {
+  static configureJackTask(
+          @NotNull Object variantData,
+          @NotNull File jillOutputFile,
+          @NotNull String kotlinJillTaskName) {
     def jackTask = getJackTask(variantData)
     // There is no Jack task for some variants
     if (jackTask == null) {
@@ -138,7 +144,7 @@ class AndroidGradleWrapper {
   }
 
   @Nullable
-  private static AbstractCompile getJavaCompile(Object baseVariantData) {
+  private static AbstractCompile getJavaCompile(@NotNull Object baseVariantData) {
     if (baseVariantData.getMetaClass().getMetaProperty("javaCompileTask")) {
       return baseVariantData.javaCompileTask
     }
