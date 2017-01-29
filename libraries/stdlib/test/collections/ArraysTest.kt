@@ -16,11 +16,11 @@
 
 package test.collections
 
-import test.collections.behaviors.listBehavior
-import test.comparisons.STRING_CASE_INSENSITIVE_ORDER
+//import test.collections.behaviors.listBehavior
+//import test.comparisons.STRING_CASE_INSENSITIVE_ORDER
 import kotlin.test.*
 import org.junit.Test
-import kotlin.comparisons.*
+//import kotlin.comparisons.*
 
 fun <T> assertArrayNotSameButEquals(expected: Array<out T>, actual: Array<out T>, message: String = "") { assertTrue(expected !== actual && expected contentEquals actual, message) }
 fun assertArrayNotSameButEquals(expected: IntArray, actual: IntArray, message: String = "") {             assertTrue(expected !== actual && expected contentEquals actual, message) }
@@ -317,10 +317,10 @@ class ArraysTest {
         expect('b', { charArrayOf('a', 'b').max() })
     }
 
-    @Test fun minWith() {
-        assertEquals(null, arrayOf<Int>().minWith(naturalOrder()) )
-        assertEquals("a", arrayOf("a", "B").minWith(STRING_CASE_INSENSITIVE_ORDER))
-    }
+//    @Test fun minWith() {
+//        assertEquals(null, arrayOf<Int>().minWith(naturalOrder()) )
+//        assertEquals("a", arrayOf("a", "B").minWith(STRING_CASE_INSENSITIVE_ORDER))
+//    }
 
     @Test fun minWithInPrimitiveArrays() {
         expect(null, { intArrayOf().minWith(naturalOrder()) })
@@ -328,10 +328,10 @@ class ArraysTest {
         expect(4, { intArrayOf(2, 3, 4).minWith(compareBy { it % 4 }) })
     }
 
-    @Test fun maxWith() {
-        assertEquals(null, arrayOf<Int>().maxWith(naturalOrder()) )
-        assertEquals("B", arrayOf("a", "B").maxWith(STRING_CASE_INSENSITIVE_ORDER))
-    }
+//    @Test fun maxWith() {
+//        assertEquals(null, arrayOf<Int>().maxWith(naturalOrder()) )
+//        assertEquals("B", arrayOf("a", "B").maxWith(STRING_CASE_INSENSITIVE_ORDER))
+//    }
 
     @Test fun maxWithInPrimitiveArrays() {
         expect(null, { intArrayOf().maxWith(naturalOrder()) })
@@ -652,20 +652,20 @@ class ArraysTest {
         assertEquals(iter4.toList(), emptyList<String>())
     }
 
-    @Test fun asList() {
-        compare(listOf(1, 2, 3), intArrayOf(1, 2, 3).asList()) { listBehavior() }
-        compare(listOf<Byte>(1, 2, 3), byteArrayOf(1, 2, 3).asList()) { listBehavior() }
-        compare(listOf(true, false), booleanArrayOf(true, false).asList()) { listBehavior() }
-
-        compare(listOf(1, 2, 3), arrayOf(1, 2, 3).asList()) { listBehavior() }
-        compare(listOf("abc", "def"), arrayOf("abc", "def").asList()) { listBehavior() }
-
-        val ints = intArrayOf(1, 5, 7)
-        val intsAsList = ints.asList()
-        assertEquals(5, intsAsList[1])
-        ints[1] = 10
-        assertEquals(10, intsAsList[1], "Should reflect changes in original array")
-    }
+//    @Test fun asList() {
+//        compare(listOf(1, 2, 3), intArrayOf(1, 2, 3).asList()) { listBehavior() }
+//        compare(listOf<Byte>(1, 2, 3), byteArrayOf(1, 2, 3).asList()) { listBehavior() }
+//        compare(listOf(true, false), booleanArrayOf(true, false).asList()) { listBehavior() }
+//
+//        compare(listOf(1, 2, 3), arrayOf(1, 2, 3).asList()) { listBehavior() }
+//        compare(listOf("abc", "def"), arrayOf("abc", "def").asList()) { listBehavior() }
+//
+//        val ints = intArrayOf(1, 5, 7)
+//        val intsAsList = ints.asList()
+//        assertEquals(5, intsAsList[1])
+//        ints[1] = 10
+//        assertEquals(10, intsAsList[1], "Should reflect changes in original array")
+//    }
 
     @Test fun toPrimitiveArray() {
         val genericArray: Array<Int> = arrayOf(1, 2, 3)
@@ -1133,48 +1133,48 @@ class ArraysTest {
         assertArrayNotSameButEquals(arrayOf("all", "Foo", "9", "80"), strArr)
     }
 
-    @Test fun sortedTests() {
-        assertTrue(arrayOf<Long>().sorted().none())
-        assertEquals(listOf(1), arrayOf(1).sorted())
-
-        fun <A, T: Comparable<T>> arrayData(vararg values: T, toArray: Array<out T>.() -> A) = ArraySortedChecker<A, T>(values.toArray(), naturalOrder())
-
-        with (arrayData("ac", "aD", "aba") { toList().toTypedArray() }) {
-            checkSorted<List<String>>({ sorted() }, { sortedDescending() }, { iterator() })
-            checkSorted<Array<String>>({ sortedArray() }, { sortedArrayDescending()}, { iterator() } )
-        }
-
-        with (arrayData("ac", "aD", "aba") { toList().toTypedArray() as Array<out String> }) {
-            checkSorted<List<String>>({ sorted() }, { sortedDescending() }, { iterator() })
-            checkSorted<Array<out String>>({ sortedArray() }, { sortedArrayDescending()}, { iterator() } )
-        }
-
-        with (arrayData(3, 7, 1) { toIntArray() }) {
-            checkSorted<List<Int>>( { sorted() }, { sortedDescending() }, { iterator() })
-            checkSorted<IntArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
-        }
-
-
-        with (arrayData(1L, Long.MIN_VALUE, Long.MAX_VALUE) { toLongArray() }) {
-            checkSorted<List<Long>>( { sorted() }, { sortedDescending() }, { iterator() })
-            checkSorted<LongArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
-        }
-
-        with (arrayData('a', 'D', 'c') { toCharArray() }) {
-            checkSorted<List<Char>>( { sorted() }, { sortedDescending() }, { iterator() })
-            checkSorted<CharArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
-        }
-
-        with (arrayData(1.toByte(), Byte.MAX_VALUE, Byte.MIN_VALUE) { toByteArray() }) {
-            checkSorted<List<Byte>>( { sorted() }, { sortedDescending() }, { iterator() })
-            checkSorted<ByteArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
-        }
-
-        with(arrayData(Double.POSITIVE_INFINITY, 1.0, Double.MAX_VALUE) { toDoubleArray() }) {
-            checkSorted<List<Double>>( { sorted() }, { sortedDescending() }, { iterator() })
-            checkSorted<DoubleArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
-        }
-    }
+//    @Test fun sortedTests() {
+//        assertTrue(arrayOf<Long>().sorted().none())
+//        assertEquals(listOf(1), arrayOf(1).sorted())
+//
+//        fun <A, T: Comparable<T>> arrayData(vararg values: T, toArray: Array<out T>.() -> A) = ArraySortedChecker<A, T>(values.toArray(), naturalOrder())
+//
+//        with (arrayData("ac", "aD", "aba") { toList().toTypedArray() }) {
+//            checkSorted<List<String>>({ sorted() }, { sortedDescending() }, { iterator() })
+//            checkSorted<Array<String>>({ sortedArray() }, { sortedArrayDescending()}, { iterator() } )
+//        }
+//
+//        with (arrayData("ac", "aD", "aba") { toList().toTypedArray() as Array<out String> }) {
+//            checkSorted<List<String>>({ sorted() }, { sortedDescending() }, { iterator() })
+//            checkSorted<Array<out String>>({ sortedArray() }, { sortedArrayDescending()}, { iterator() } )
+//        }
+//
+//        with (arrayData(3, 7, 1) { toIntArray() }) {
+//            checkSorted<List<Int>>( { sorted() }, { sortedDescending() }, { iterator() })
+//            checkSorted<IntArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
+//        }
+//
+//
+//        with (arrayData(1L, Long.MIN_VALUE, Long.MAX_VALUE) { toLongArray() }) {
+//            checkSorted<List<Long>>( { sorted() }, { sortedDescending() }, { iterator() })
+//            checkSorted<LongArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
+//        }
+//
+//        with (arrayData('a', 'D', 'c') { toCharArray() }) {
+//            checkSorted<List<Char>>( { sorted() }, { sortedDescending() }, { iterator() })
+//            checkSorted<CharArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
+//        }
+//
+//        with (arrayData(1.toByte(), Byte.MAX_VALUE, Byte.MIN_VALUE) { toByteArray() }) {
+//            checkSorted<List<Byte>>( { sorted() }, { sortedDescending() }, { iterator() })
+//            checkSorted<ByteArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
+//        }
+//
+//        with(arrayData(Double.POSITIVE_INFINITY, 1.0, Double.MAX_VALUE) { toDoubleArray() }) {
+//            checkSorted<List<Double>>( { sorted() }, { sortedDescending() }, { iterator() })
+//            checkSorted<DoubleArray>( { sortedArray() }, { sortedArrayDescending() }, { iterator() })
+//        }
+//    }
 
     @Test fun sortByInPlace() {
         val data = arrayOf("aa" to 20, "ab" to 3, "aa" to 3)
@@ -1204,26 +1204,26 @@ class ArraysTest {
         }
     }
 
-    @Test fun sortedWith() {
-        val comparator = compareBy { it: Int -> it % 3 }.thenByDescending { it }
-        fun <A, T> arrayData(array: A, comparator: Comparator<T>) = ArraySortedChecker<A, T>(array, comparator)
-
-        arrayData(intArrayOf(0, 1, 2, 3, 4, 5), comparator)
-                .checkSorted<List<Int>>( { sortedWith(comparator) }, { sortedWith(comparator.reversed()) }, { iterator() })
-
-        arrayData(arrayOf(0, 1, 2, 3, 4, 5), comparator)
-                .checkSorted<Array<out Int>>( { sortedArrayWith(comparator) }, { sortedArrayWith(comparator.reversed()) }, { iterator() })
-
-        // in-place
-        val array = Array(6) { it }
-        array.sortWith(comparator)
-        array.iterator().assertSorted { a, b -> comparator.compare(a, b) <= 0 }
-    }
+//    @Test fun sortedWith() {
+//        val comparator = compareBy { it: Int -> it % 3 }.thenByDescending { it }
+//        fun <A, T> arrayData(array: A, comparator: Comparator<T>) = ArraySortedChecker<A, T>(array, comparator)
+//
+//        arrayData(intArrayOf(0, 1, 2, 3, 4, 5), comparator)
+//                .checkSorted<List<Int>>( { sortedWith(comparator) }, { sortedWith(comparator.reversed()) }, { iterator() })
+//
+//        arrayData(arrayOf(0, 1, 2, 3, 4, 5), comparator)
+//                .checkSorted<Array<out Int>>( { sortedArrayWith(comparator) }, { sortedArrayWith(comparator.reversed()) }, { iterator() })
+//
+//        // in-place
+//        val array = Array(6) { it }
+//        array.sortWith(comparator)
+//        array.iterator().assertSorted { a, b -> comparator.compare(a, b) <= 0 }
+//    }
 }
 
-private class ArraySortedChecker<A, T>(val array: A, val comparator: Comparator<in T>) {
-    public fun <R> checkSorted(sorted: A.() -> R, sortedDescending: A.() -> R, iterator: R.() -> Iterator<T>) {
-        array.sorted().iterator().assertSorted { a, b -> comparator.compare(a, b) <= 0 }
-        array.sortedDescending().iterator().assertSorted { a, b -> comparator.compare(a, b) >= 0 }
-    }
-}
+//private class ArraySortedChecker<A, T>(val array: A, val comparator: Comparator<in T>) {
+//    public fun <R> checkSorted(sorted: A.() -> R, sortedDescending: A.() -> R, iterator: R.() -> Iterator<T>) {
+//        array.sorted().iterator().assertSorted { a, b -> comparator.compare(a, b) <= 0 }
+//        array.sortedDescending().iterator().assertSorted { a, b -> comparator.compare(a, b) >= 0 }
+//    }
+//}

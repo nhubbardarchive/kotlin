@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.js.translate.context.Namer;
 import org.jetbrains.kotlin.js.translate.context.TranslationContext;
 import org.jetbrains.kotlin.js.translate.intrinsic.functions.basic.FunctionIntrinsic;
 import org.jetbrains.kotlin.js.translate.intrinsic.functions.basic.FunctionIntrinsicWithReceiverComputed;
+import org.jetbrains.kotlin.js.translate.utils.JsAstUtils;
 import org.jetbrains.kotlin.name.Name;
 
 import java.util.List;
@@ -82,7 +83,14 @@ public final class ArrayFIF extends CompositeFIF {
                 @NotNull TranslationContext context
         ) {
             assert arguments.size() == 1;
-            return arguments.get(0);
+            JsExpression e = arguments.get(0);
+            if (e instanceof JsArrayLiteral) {
+                List<JsExpression> arr = ((JsArrayLiteral)e).getExpressions();
+                for (int i = 0; i < arr.size(); ++i) {
+                    arr.set(i, boxUnboxedCharArgumentHack(arr.get(i)));
+                }
+            }
+            return e;
         }
     };
 
@@ -110,11 +118,22 @@ public final class ArrayFIF extends CompositeFIF {
             assert receiver != null;
             assert arguments.size() == 2 : "Array set expression must have two arguments.";
             JsExpression indexExpression = arguments.get(0);
-            JsExpression value = arguments.get(1);
+            JsExpression value = boxUnboxedCharArgumentHack(arguments.get(1));
             JsArrayAccess arrayAccess = new JsArrayAccess(receiver, indexExpression);
             return assignment(arrayAccess, value);
         }
     };
+
+    // TODO rewrite relying on metadata
+    private static JsExpression boxUnboxedCharArgumentHack(JsExpression e) {
+        if (e instanceof JsInvocation && ((JsInvocation) e).getQualifier() instanceof JsNameRef) {
+            JsNameRef ref = (JsNameRef) ((JsInvocation) e).getQualifier();
+            if ("unboxChar".equals(ref.getIdent())) {
+                return JsAstUtils.charToBoxedChar(e);
+            }
+        }
+        return e;
+    }
 
     @NotNull
     public static final FunctionIntrinsicFactory INSTANCE = new ArrayFIF();
@@ -126,7 +145,7 @@ public final class ArrayFIF extends CompositeFIF {
         add(pattern(ARRAYS, "iterator"), new KotlinFunctionIntrinsic("arrayIterator"));
 
         add(pattern(NUMBER_ARRAY, "<init>(Int)"), new KotlinFunctionIntrinsic("newArray", JsNumberLiteral.ZERO));
-        add(pattern(CHAR_ARRAY, "<init>(Int)"), new KotlinFunctionIntrinsic("newArray", JsNumberLiteral.ZERO));
+        add(pattern(CHAR_ARRAY, "<init>(Int)"), new KotlinFunctionIntrinsic("newArray", JsAstUtils.charToBoxedChar(JsNumberLiteral.ZERO)));
         add(pattern(BOOLEAN_ARRAY, "<init>(Int)"), new KotlinFunctionIntrinsic("newArray", JsLiteral.FALSE));
         add(pattern(LONG_ARRAY, "<init>(Int)"), new KotlinFunctionIntrinsic("newArray", new JsNameRef(Namer.LONG_ZERO, Namer.kotlinLong())));
 
