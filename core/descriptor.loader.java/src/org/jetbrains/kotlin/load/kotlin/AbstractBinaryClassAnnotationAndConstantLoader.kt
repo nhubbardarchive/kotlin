@@ -37,7 +37,8 @@ import java.util.*
 
 abstract class AbstractBinaryClassAnnotationAndConstantLoader<A : Any, C : Any, T : Any>(
         storageManager: StorageManager,
-        private val kotlinClassFinder: KotlinClassFinder
+        private val kotlinClassFinder: KotlinClassFinder,
+        private val cachedFileContent: ByteArray? = null
 ) : AnnotationAndConstantLoader<A, C, T> {
     private val storage = storageManager.createMemoizedFunction<KotlinJvmBinaryClass, Storage<A, C>> {
         kotlinClass ->
@@ -79,7 +80,7 @@ abstract class AbstractBinaryClassAnnotationAndConstantLoader<A : Any, C : Any, 
 
             override fun visitEnd() {
             }
-        })
+        }, cachedFileContent)
 
         return result
     }
@@ -294,7 +295,7 @@ abstract class AbstractBinaryClassAnnotationAndConstantLoader<A : Any, C : Any, 
                     }
                 }
             }
-        })
+        }, cachedFileContent)
 
         return Storage(memberAnnotations, propertyConstants)
     }
