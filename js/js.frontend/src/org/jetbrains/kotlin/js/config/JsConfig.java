@@ -52,7 +52,6 @@ public abstract class JsConfig {
     private final Project project;
     private final CompilerConfiguration configuration;
     private final LockBasedStorageManager storageManager = new LockBasedStorageManager();
-    private final List<KtFile> sourceFilesFromLibraries = new SmartList<KtFile>();
 
     @NotNull
     protected final List<KotlinJavascriptMetadata> metadata = new SmartList<KotlinJavascriptMetadata>();
@@ -89,7 +88,7 @@ public abstract class JsConfig {
 
     public abstract boolean checkLibFilesAndReportErrors(@NotNull Function1<String, Unit> report);
 
-    protected abstract void init(@NotNull List<KtFile> sourceFilesInLibraries, @NotNull List<KotlinJavascriptMetadata> metadata);
+    protected abstract void init(@NotNull List<KotlinJavascriptMetadata> metadata);
 
     @NotNull
     public List<JsModuleDescriptor<ModuleDescriptorImpl>> getModuleDescriptors() {
@@ -114,16 +113,10 @@ public abstract class JsConfig {
         return moduleDescriptors;
     }
 
-    @NotNull
-    private List<KtFile> getSourceFilesFromLibraries() {
-        init();
-        return sourceFilesFromLibraries;
-    }
-
     private void init() {
         if (initialized) return;
 
-        init(sourceFilesFromLibraries, metadata);
+        init(metadata);
         initialized = true;
     }
 
@@ -152,10 +145,9 @@ public abstract class JsConfig {
     }
 
     @NotNull
-    public static Collection<KtFile> withJsLibAdded(@NotNull Collection<KtFile> files, @NotNull JsConfig config) {
+    public static Collection<KtFile> withJsLibAdded(@NotNull Collection<KtFile> files) {
         Collection<KtFile> allFiles = Lists.newArrayList();
         allFiles.addAll(files);
-        allFiles.addAll(config.getSourceFilesFromLibraries());
         return allFiles;
     }
 }
