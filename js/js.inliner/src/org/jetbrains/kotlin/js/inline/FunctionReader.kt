@@ -16,13 +16,12 @@
 
 package org.jetbrains.kotlin.js.inline
 
-import org.jetbrains.kotlin.js.backend.ast.metadata.inlineStrategy
 import com.google.gwt.dev.js.ThrowExceptionOnErrorReporter
 import com.intellij.util.containers.SLRUCache
-import org.jetbrains.kotlin.builtins.isExtensionFunctionType
 import org.jetbrains.kotlin.builtins.isFunctionTypeOrSubtype
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.js.backend.ast.*
+import org.jetbrains.kotlin.js.backend.ast.metadata.inlineStrategy
 import org.jetbrains.kotlin.js.config.LibrarySourcesConfig
 import org.jetbrains.kotlin.js.inline.util.IdentitySet
 import org.jetbrains.kotlin.js.inline.util.isCallInvocation
@@ -31,7 +30,7 @@ import org.jetbrains.kotlin.js.translate.context.Namer
 import org.jetbrains.kotlin.js.translate.context.TranslationContext
 import org.jetbrains.kotlin.js.translate.reference.CallExpressionTranslator
 import org.jetbrains.kotlin.js.translate.utils.JsAstUtils
-import org.jetbrains.kotlin.js.translate.utils.JsDescriptorUtils.getExternalModuleName
+import org.jetbrains.kotlin.js.translate.utils.JsDescriptorUtils.getModuleName
 import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.inline.InlineStrategy
 import org.jetbrains.kotlin.utils.JsLibraryUtils
@@ -72,7 +71,7 @@ class FunctionReader(private val context: TranslationContext) {
         val config = context.config as LibrarySourcesConfig
         val libs = config.libraries.map { File(it) }
 
-        JsLibraryUtils.traverseJsLibraries(libs) { fileContent, path ->
+        JsLibraryUtils.traverseJsLibraries(libs) { fileContent, _ ->
             var current = 0
 
             while (true) {
@@ -120,9 +119,9 @@ class FunctionReader(private val context: TranslationContext) {
     }
 
     operator fun contains(descriptor: CallableDescriptor): Boolean {
-        val moduleName = getExternalModuleName(descriptor)
+        val moduleName = getModuleName(descriptor)
         val currentModuleName = context.config.moduleId
-        return currentModuleName != moduleName && moduleName != null && moduleName in moduleJsDefinition
+        return currentModuleName != moduleName && moduleName in moduleJsDefinition
     }
 
     operator fun get(descriptor: CallableDescriptor): JsFunction = functionCache.get(descriptor)
@@ -130,7 +129,7 @@ class FunctionReader(private val context: TranslationContext) {
     private fun readFunction(descriptor: CallableDescriptor): JsFunction? {
         if (descriptor !in this) return null
 
-        val moduleName = getExternalModuleName(descriptor)
+        val moduleName = getModuleName(descriptor)
         val file = moduleJsDefinition[moduleName].sure { "Module $moduleName file have not been read" }
         val function = readFunctionFromSource(descriptor, file)
         function?.markInlineArguments(descriptor)
@@ -149,7 +148,7 @@ class FunctionReader(private val context: TranslationContext) {
         }
 
         val function = parseFunction(source, offset, ThrowExceptionOnErrorReporter, JsRootScope(JsProgram()))
-        val moduleName = getExternalModuleName(descriptor)!!
+        val moduleName = getModuleName(descriptor)
         val moduleReference = context.getModuleExpressionFor(descriptor) ?: getRootPackage()
 
         val replacements = hashMapOf(moduleRootVariable[moduleName]!! to moduleReference,
